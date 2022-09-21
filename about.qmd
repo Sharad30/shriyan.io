@@ -1,19 +1,21 @@
 ---
-title: "About"
+title: "Sharad Shriyan"
 image: profile.jpg
 about:
   template: jolla
   links:
     - icon: twitter
       text: Twitter
-      href: https://twitter.com
+      href: https://twitter.com/sharadshriyan
     - icon: linkedin
       text: LinkedIn
-      href: https://linkedin.com
+      href: https://in.linkedin.com/in/sharad-shriyan-aa9a37104
     - icon: github
       text: Github
-      href: https://github.com
+      href: https://github.com/sharad30
 
 ---
 
-About this blog
+I have worked as a Machine Learning Engineer for the last 4 years. As part of my professional experience, my work has generally revolved around the BFSI industry.
+
+My current work and interest involves tabular data and computer vision problems.
