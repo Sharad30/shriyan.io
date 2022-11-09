@@ -122,8 +122,8 @@ ul.task-list li input[type="checkbox"] {
 </ul>
 <section id="tldr" class="level2">
 <h2 class="anchored" data-anchor-id="tldr">TL;DR</h2>
-<p>In this blogpost I will talk about a data monitoring system that I built to monitor the quality and availibility in real time. The system has an <code>Airflow</code> to schedule jobs, <code>PostgreSQL</code> to store data and <code>Superset</code> to visualize the data and monitor its quality.</p>
-<p>Through this system I monitored the data quality, data consistency, data drift. This system enables you to take actions like - identifying discrepancies in ETL pipeline if expected data is missing, anomaly in the data that is causing the business objective to fail and many more.</p>
+<p>In this blogpost I talk about a data monitoring system that I built to monitor the quality and availibility in real time. The system uses <code>Airflow</code> to schedule jobs, <code>PostgreSQL</code> to store data and <code>Superset</code> to visualize the data and monitor its quality.</p>
+<p>Through this system I monitor the data availability, quality, consistency, drift. This system enables you to take actions like - identifying discrepancies in ETL pipeline if expected data is missing, anomaly in the data that is causing the business objective to fail and many more.</p>
 </section>
 <section id="steps" class="level2">
 <h2 class="anchored" data-anchor-id="steps">Steps</h2>
@@ -139,32 +139,30 @@ ul.task-list li input[type="checkbox"] {
 <h2 class="anchored" data-anchor-id="what-does-the-high-level-architecture-look-like">What does the high level architecture look like?</h2>
 <p><img src="monitoring-system.png" class="img-fluid"></p>
 </section>
-<section id="setting-up-postgresql-airflow-and-superset" class="level2">
-<h2 class="anchored" data-anchor-id="setting-up-postgresql-airflow-and-superset">Setting up PostgreSQL, Airflow and Superset</h2>
-<section id="docker-postgresql" class="level3">
-<h3 class="anchored" data-anchor-id="docker-postgresql">1. Docker PostgreSQL</h3>
-<pre><code>docker pull postgres
-docker run --name &lt;name_of_container&gt; -e POSTGRES_USER=&lt;username&gt; -e POSTGRES_PASSWORD=&lt;password&gt; -p 5432:5432 -v /data:/var/lib/postgresql/data -d &lt;db_name&gt;</code></pre>
-</section>
-<section id="docker-airflow" class="level3">
-<h3 class="anchored" data-anchor-id="docker-airflow">2. Docker Airflow</h3>
+<section id="setting-up-postgresql-airflow-and-superset-using-docker" class="level2">
+<h2 class="anchored" data-anchor-id="setting-up-postgresql-airflow-and-superset-using-docker">Setting up PostgreSQL, Airflow and Superset using Docker</h2>
+<ul>
+<li><p>To setup Airflow using Docker:</p>
 <p>Run the below instructions inside the repo where your your python code resides.</p>
 <pre><code>curl -LfO 'https://airflow.apache.org/docs/apache-airflow/2.4.1/docker-compose.yaml'
 mkdir -p ./dags ./logs ./plugins
 echo -e 'AIRFLOW_UID=$(id -u)' &gt; .env
-docker-compose up airflow-init</code></pre>
-</section>
-<section id="docker-superset" class="level3">
-<h3 class="anchored" data-anchor-id="docker-superset">3. Docker Superset</h3>
+docker-compose up airflow-init</code></pre></li>
+<li><p>To setup PostgreSQL using Docker:</p></li>
+</ul>
+<pre><code>docker pull postgres
+docker run --name &lt;name_of_container&gt; -e POSTGRES_USER=&lt;username&gt; -e POSTGRES_PASSWORD=&lt;password&gt; -p 5432:5432 -v /data:/var/lib/postgresql/data -d &lt;db_name&gt;</code></pre>
+<ul>
+<li>To setup Superset using Docker:</li>
+</ul>
 <pre><code>git clone https://github.com/apache/superset.git
 cd superset
 docker-compose -f docker-compose-non-dev.yml pull
 docker-compose -f docker-compose-non-dev.yml up</code></pre>
 </section>
-</section>
-<section id="how-do-you-go-about-scheduling-a-task-using-airflow" class="level2">
-<h2 class="anchored" data-anchor-id="how-do-you-go-about-scheduling-a-task-using-airflow">How do you go about scheduling a task using <code>Airflow</code>?</h2>
-<p>According to official documentation: &gt; Apache Airflow is an open-source platform for developing, scheduling, and monitoring batch-oriented workflows.</p>
+<section id="how-do-you-schedule-a-task-using-airflow" class="level2">
+<h2 class="anchored" data-anchor-id="how-do-you-schedule-a-task-using-airflow">How do you schedule a task using <code>Airflow</code>?</h2>
+<p>Apache Airflow is an open-source platform for developing, scheduling, and monitoring batch-oriented workflows.</p>
 <p>The below steps ensure that you have an up and running job scheduled at regular intervals:</p>
 <ol type="1">
 <li>Define a function to fetch data from the API or from S3 or any other source</li>
