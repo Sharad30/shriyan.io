@@ -122,8 +122,16 @@ ul.task-list li input[type="checkbox"] {
 </ul>
 <section id="tldr" class="level2">
 <h2 class="anchored" data-anchor-id="tldr">TL;DR</h2>
-<p>When you deal with data coming into your system at regular intervals(hourly, daily, weekly etc.), there are few things you will need to handle in such a scenario: 1. Schedule a task which can download, preprocess and push the data to database at regular interval. 2. Check for data sanity and visualize the same for better understanding of the data. 3. In case of discrepancy observed, report the same to stakeholders or concerned team.</p>
-<p>The idea to develop such a monitoring system, which keeps everyone updated about the nature of data received and also the discrepancy in it, is crucial to any data science pipeline. In this blog post we will further expand on this idea and demonstrate how to go about setting up such a system with the only constraint being, that the data should be available at certain fixed interval in a time series fashion.</p>
+<p>In this blogpost I will talk about a data monitoring system that I built to monitor the quality and availibility in real time. The system has an <code>Airflow</code> to schedule jobs, <code>PostgreSQL</code> to store data and <code>Superset</code> to visualize the data and monitor its quality.</p>
+<p>Through this system I monitored the data quality, data consistency, data drift etc. This system enables you to take actions like - identifying discrepancies in ETL pipeline if expected data is missing, anomaly in the data that is causing the business objective to fail and many more.</p>
+</section>
+<section id="steps" class="level2">
+<h2 class="anchored" data-anchor-id="steps">Steps</h2>
+<ol type="1">
+<li><p>I will first setup a list of tasks that will enable me to monitor data. This is done using Airflow where tasks run to gather the data of interest.</p></li>
+<li><p>I will store the processed data into a PostgreSQL database.</p></li>
+<li><p>The data will be visualized and monitored using Superset dashboard.</p></li>
+</ol>
 </section>
 <section id="what-does-the-high-level-architecture-look-like" class="level2">
 <h2 class="anchored" data-anchor-id="what-does-the-high-level-architecture-look-like">What does the high level architecture look like?</h2>
@@ -183,7 +191,7 @@ docker-compose -f docker-compose-non-dev.yml up</code></pre>
 
     print("All values created, starting the push to db")
     df.to_sql(name="&lt;name-of-sql-table&gt;", con=engine, index=False, if_exists="append", chunksize=300)</code></pre>
-<p>In the above function we <strong>basically</strong> load the json data downloaded in step 1 inside a dataframe and then move it to PostgreSQL table, defined in our <code>con</code> parameter of <code>to_sql</code> function.</p>
+<p>In the above function we load the json data downloaded in step 1 inside a dataframe and then move it to PostgreSQL table, defined in our <code>con</code> parameter of <code>to_sql</code> function.</p>
 <ol start="3" type="1">
 <li>Define a <code>DAG</code></li>
 </ol>
