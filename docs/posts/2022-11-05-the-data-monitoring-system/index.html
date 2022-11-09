@@ -122,47 +122,91 @@ ul.task-list li input[type="checkbox"] {
 </ul>
 <section id="tldr" class="level2">
 <h2 class="anchored" data-anchor-id="tldr">TL;DR</h2>
-<p>In this blogpost I talk about a data monitoring system that I built to monitor the quality and availibility in real time. The system uses <code>Airflow</code> to schedule jobs, <code>PostgreSQL</code> to store data and <code>Superset</code> to visualize the data and monitor its quality.</p>
-<p>Through this system I monitor the data availability, quality, consistency, drift. This system enables you to take actions like - identifying discrepancies in ETL pipeline if expected data is missing, anomaly in the data that is causing the business objective to fail and many more.</p>
+<p>In this blogpost I talk about a data monitoring system that I built to monitor the quality and availibility of data in real time. The system uses <code>Airflow</code> to schedule jobs, <code>PostgreSQL</code> to store data and <code>Superset</code> to visualize the data and monitor its quality.</p>
+<p>Through this system I monitor the data availability, quality, consistency, and drift. This system enables me to take actions like - identifying discrepancies in the ETL pipeline, if expected data is missing, anomaly in the data that is causing the business objective to fail, and many more.</p>
 </section>
-<section id="steps" class="level2">
-<h2 class="anchored" data-anchor-id="steps">Steps</h2>
-<p>I am assuming that you have Docker installed in your system. If not install it first and follow the next steps below.</p>
+<section id="outline" class="level2">
+<h2 class="anchored" data-anchor-id="outline">Outline</h2>
+<p>I am assuming that you have Docker installed in your system. If not installed, follow the instructions at <url>.</url></p>
 <p>We will:</p>
 <ol type="1">
 <li><p>Install Airflow, PostgreSQL and Superset with Docker.</p></li>
 <li><p>Fetch data, preprocess and push to PostgreSQL using Airflow.</p></li>
-<li><p>Visualize and monitor the data in Superset</p></li>
+<li><p>Build dashboards in Superset to monitor and visualize the data.</p></li>
 </ol>
 </section>
-<section id="what-does-the-high-level-architecture-look-like" class="level2">
-<h2 class="anchored" data-anchor-id="what-does-the-high-level-architecture-look-like">What does the high level architecture look like?</h2>
+<section id="high-level-architecture-in-a-diagram" class="level2">
+<h2 class="anchored" data-anchor-id="high-level-architecture-in-a-diagram">High level architecture in a diagram</h2>
 <p><img src="monitoring-system.png" class="img-fluid"></p>
 </section>
-<section id="setting-up-postgresql-airflow-and-superset-using-docker" class="level2">
-<h2 class="anchored" data-anchor-id="setting-up-postgresql-airflow-and-superset-using-docker">Setting up PostgreSQL, Airflow and Superset using Docker</h2>
+<section id="setting-up-postgresql-airflow-and-superset" class="level2">
+<h2 class="anchored" data-anchor-id="setting-up-postgresql-airflow-and-superset">Setting up PostgreSQL, Airflow and Superset</h2>
+<section id="to-setup-airflow-using-docker" class="level3">
+<h3 class="anchored" data-anchor-id="to-setup-airflow-using-docker">To setup Airflow using Docker:</h3>
+<section id="download-airflow-docker-compose" class="level4">
+<h4 class="anchored" data-anchor-id="download-airflow-docker-compose">Download Airflow docker-compose</h4>
+<pre><code>curl -LfO 'https://airflow.apache.org/docs/apache-airflow/2.4.1/docker-compose.yaml'</code></pre>
+</section>
+<section id="create-mount-directories-for-docker" class="level4">
+<h4 class="anchored" data-anchor-id="create-mount-directories-for-docker">Create mount directories for Docker</h4>
+<pre><code>mkdir -p ./dags ./logs ./plugins</code></pre>
+</section>
+<section id="save-airflow_uid-in-.env" class="level4">
+<h4 class="anchored" data-anchor-id="save-airflow_uid-in-.env">Save AIRFLOW_UID in .env</h4>
+<pre><code>echo -e "AIRFLOW_UID=$(id -u)" &gt; .env</code></pre>
+</section>
+<section id="initialize-the-database" class="level4">
+<h4 class="anchored" data-anchor-id="initialize-the-database">Initialize the database</h4>
+<pre><code>docker-compose up airflow-init</code></pre>
+</section>
+<section id="start-all-airflow-services" class="level4">
+<h4 class="anchored" data-anchor-id="start-all-airflow-services">Start all airflow services</h4>
+<pre><code>docker-compose up</code></pre>
+</section>
+</section>
+<section id="to-setup-postgresql-using-docker" class="level3">
+<h3 class="anchored" data-anchor-id="to-setup-postgresql-using-docker">To setup PostgreSQL using Docker:</h3>
+<section id="pull-postgres-docker-images" class="level4">
+<h4 class="anchored" data-anchor-id="pull-postgres-docker-images">Pull postgres Docker images</h4>
+<pre><code>docker pull postgres</code></pre>
+</section>
+<section id="run-postgres-container" class="level4">
+<h4 class="anchored" data-anchor-id="run-postgres-container">Run postgres container</h4>
+<pre><code>docker run --name postgresql -e POSTGRES_USER=&lt;username&gt; -e POSTGRES_PASSWORD=&lt;password&gt; -p 5432:5432 -v /data:/var/lib/postgresql/data -d postgres</code></pre>
 <ul>
-<li><p>To setup Airflow using Docker:</p>
-<p>Run the below instructions inside the repo where your your python code resides.</p>
-<pre><code>curl -LfO 'https://airflow.apache.org/docs/apache-airflow/2.4.1/docker-compose.yaml'
-mkdir -p ./dags ./logs ./plugins
-echo -e 'AIRFLOW_UID=$(id -u)' &gt; .env
-docker-compose up airflow-init</code></pre></li>
-<li><p>To setup PostgreSQL using Docker:</p></li>
+<li>postgresql is the name of the Docker Container. -e POSTGRES_USER is the parameter that sets a unique username to the Postgres database. -e POSTGRES_PASSWORD is the parameter that allows you to set the password of the Postgres database. -p 5432:5432 is the parameter that establishes a connection between the Host Port and Docker Container Port. In this case, both ports are given as 5432, which indicates requests sent to the Host Ports will automatically redirect to the Docker Container Port. In addition, 5432 is also the same port where PostgreSQL will be accepting requests from the client. -v is the parameter that synchronizes the Postgres data with the local folder. This ensures that Postgres data will be safely present within the Home Directory even if the Docker Container is terminated. -d is the parameter that runs the Docker Container in the detached mode, i.e., in the background. If you accidentally close or terminate the Command Prompt, the Docker Container will still run in the background. postgres is the name of the Docker image that was previously downloaded to run the Docker Container.</li>
 </ul>
-<pre><code>docker pull postgres
-docker run --name &lt;name_of_container&gt; -e POSTGRES_USER=&lt;username&gt; -e POSTGRES_PASSWORD=&lt;password&gt; -p 5432:5432 -v /data:/var/lib/postgresql/data -d &lt;db_name&gt;</code></pre>
-<ul>
-<li>To setup Superset using Docker:</li>
-</ul>
+</section>
+</section>
+<section id="to-setup-superset-using-docker" class="level3">
+<h3 class="anchored" data-anchor-id="to-setup-superset-using-docker">To setup Superset using Docker:</h3>
+<section id="clone-the-repository" class="level4">
+<h4 class="anchored" data-anchor-id="clone-the-repository">Clone the repository</h4>
 <pre><code>git clone https://github.com/apache/superset.git
-cd superset
-docker-compose -f docker-compose-non-dev.yml pull
+cd superset</code></pre>
+</section>
+<section id="run-superset" class="level4">
+<h4 class="anchored" data-anchor-id="run-superset">Run superset</h4>
+<pre><code>docker-compose -f docker-compose-non-dev.yml pull
 docker-compose -f docker-compose-non-dev.yml up</code></pre>
+</section>
+</section>
+<section id="to-setup-using-setup.sh" class="level3">
+<h3 class="anchored" data-anchor-id="to-setup-using-setup.sh">To setup using setup.sh:</h3>
+<p>Clone the repo and run:</p>
+<pre><code>./setup.sh</code></pre>
+</section>
 </section>
 <section id="how-do-you-schedule-a-task-using-airflow" class="level2">
 <h2 class="anchored" data-anchor-id="how-do-you-schedule-a-task-using-airflow">How do you schedule a task using <code>Airflow</code>?</h2>
 <p>Apache Airflow is an open-source platform for developing, scheduling, and monitoring batch-oriented workflows.</p>
+<ol type="1">
+<li>Create a python module inside <code>dags</code> folder.</li>
+<li>Define a function that is executed as a task.</li>
+<li>Define a <code>DAG</code> to schedule tasks.</li>
+<li>Define a task using the function defined in step 2.</li>
+<li>Setup task dependencies.</li>
+</ol>
 <p>The below steps ensure that you have an up and running job scheduled at regular intervals:</p>
 <ol type="1">
 <li>Define a function to fetch data from the API or from S3 or any other source</li>
