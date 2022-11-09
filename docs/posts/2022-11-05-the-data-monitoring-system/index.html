@@ -123,14 +123,16 @@ ul.task-list li input[type="checkbox"] {
 <section id="tldr" class="level2">
 <h2 class="anchored" data-anchor-id="tldr">TL;DR</h2>
 <p>In this blogpost I will talk about a data monitoring system that I built to monitor the quality and availibility in real time. The system has an <code>Airflow</code> to schedule jobs, <code>PostgreSQL</code> to store data and <code>Superset</code> to visualize the data and monitor its quality.</p>
-<p>Through this system I monitored the data quality, data consistency, data drift etc. This system enables you to take actions like - identifying discrepancies in ETL pipeline if expected data is missing, anomaly in the data that is causing the business objective to fail and many more.</p>
+<p>Through this system I monitored the data quality, data consistency, data drift. This system enables you to take actions like - identifying discrepancies in ETL pipeline if expected data is missing, anomaly in the data that is causing the business objective to fail and many more.</p>
 </section>
 <section id="steps" class="level2">
 <h2 class="anchored" data-anchor-id="steps">Steps</h2>
+<p>I am assuming that you have Docker installed in your system. If not install it first and follow the next steps below.</p>
+<p>We will:</p>
 <ol type="1">
-<li><p>I will first setup a list of tasks that will enable me to monitor data. This is done using Airflow where tasks run to gather the data of interest.</p></li>
-<li><p>I will store the processed data into a PostgreSQL database.</p></li>
-<li><p>The data will be visualized and monitored using Superset dashboard.</p></li>
+<li><p>Install Airflow, PostgreSQL and Superset with Docker.</p></li>
+<li><p>Fetch data, preprocess and push to PostgreSQL using Airflow.</p></li>
+<li><p>Visualize and monitor the data in Superset</p></li>
 </ol>
 </section>
 <section id="what-does-the-high-level-architecture-look-like" class="level2">
